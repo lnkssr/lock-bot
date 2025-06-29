@@ -30,6 +30,8 @@ func (b *Bot) registerHandlers() {
 	b.api.Handle("/help", b.help)
 	b.api.Handle("/login", b.loginHandler)
 	b.api.Handle("/profile", b.profileHandler)
+	b.api.Handle("/logout", b.logoutHandler)
+	b.api.Handle("/register", b.registerHandler)
 }
 
 func (b *Bot) Start() {
