@@ -19,7 +19,7 @@ func doRequest(method, url string, body io.Reader, headers map[string]string) ([
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, 0, fmt.Errorf("ошибка запроса к серверу: %w", err)
+		return nil, 0, fmt.Errorf("ошибка отправки запроса: %w", err)
 	}
 	defer resp.Body.Close()
 

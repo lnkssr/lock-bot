@@ -11,7 +11,12 @@ import (
 
 func (b *Bot) help(c tele.Context) error {
 	// TODO: help list command
-	return c.Send("Help page")
+	return c.Send(`Help page: 
+	/login - login in account
+	/register - reginster in account
+	/logout - logout
+	/profile - weiw your profile
+	/storage - weiw your storage`)
 }
 
 func (b *Bot) loginHandler(c tele.Context) error {
@@ -98,4 +103,60 @@ func (b *Bot) registerHandler(c tele.Context) error {
 	)
 
 	return c.Send(reply)
+}
+
+func (b *Bot) uploadHandler(c tele.Context) error {
+	file := c.Message().Document
+	if file == nil {
+		return c.Send("Пожалуйста, отправьте файл в виде документа.")
+	}
+
+	reader, err := b.api.File(&file.File)
+	if err != nil {
+		return c.Send("Ошибка при получении файла: " + err.Error())
+	}
+	defer reader.Close()
+
+	userID := c.Sender().ID
+	token, ok := b.getSession(userID)
+	if !ok {
+		return c.Send("Вы не авторизованы. Пожалуйста, войдите с помощью /login")
+	}
+
+	respBody, err := api.UploadFile(token, file.FileName, reader)
+	if err != nil {
+		return c.Send("Ошибка загрузки файла: " + err.Error())
+	}
+
+	return c.Send("Файл успешно загружен!\nОтвет: " + string(respBody))
+}
+
+func (b *Bot) storageHandler(c tele.Context) error {
+	userID := c.Sender().ID
+	token, ok := b.getSession(userID)
+	if !ok {
+		return c.Send("Вы не авторизованы. Пожалуйста, войдите с помощью /login")
+	}
+
+	storage, err := api.GetStorage(token)
+	if err != nil {
+		return c.Send("Ошибка получения информации о хранилище: " + err.Error())
+	}
+
+	reply := fmt.Sprintf(
+		"Файлы в хранилище (%d):\n%s\n\nИспользовано: %d из %d байт",
+		len(storage.Files),
+		formatFilesList(storage.Files),
+		storage.Storage.Used,
+		storage.Storage.Limit,
+	)
+
+	return c.Send(reply)
+}
+
+func formatFilesList(files []string) string {
+	if len(files) == 0 {
+		return "(пусто)"
+	}
+	return "- " + strings.Join(files, "\n• ")
 }
