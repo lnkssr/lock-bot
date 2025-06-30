@@ -153,20 +153,23 @@ func GetStorage(token string) (*models.StorageResponse, error) {
 
 	return &resp, nil
 }
+
 func DeleteFile(token, filename string) error {
+	escapedName := url.PathEscape(filename)
+
 	headers := map[string]string{
 		"Authorization": "Bearer " + token,
 		"Accept":        "application/json",
 	}
 
-	url := fmt.Sprintf("%sdelete/%s", config.Api, url.PathEscape(filename))
-
-	body, status, err := doRequest("DELETE", url, nil, headers)
+	body, status, err := doRequest("DELETE", config.Api+"delete/"+escapedName, nil, headers)
 	if err != nil {
-		return fmt.Errorf("ошибка запроса: %w", err)
+		return err
 	}
 
-	statusCheck(status, body)
+	if status != http.StatusOK {
+		return fmt.Errorf("ошибка сервера: %d %s", status, string(body))
+	}
 
 	return nil
 }
@@ -207,4 +210,71 @@ func DownloadFile(token, filename string) ([]byte, string, error) {
 	statusCheck(status, body)
 
 	return body, filename, nil
+}
+
+func MakeAdmin(token string, userID int) error {
+	headers := map[string]string{
+		"Authorization": "Bearer " + token,
+		"Accept":        "application/json",
+	}
+
+	url := fmt.Sprintf("%sadmin/make_admin/%d", config.Api, userID)
+	body, status, err := doRequest("PUT", url, nil, headers)
+	if err != nil {
+		return fmt.Errorf("ошибка запроса: %w", err)
+	}
+
+	if status < 200 || status >= 300 {
+		return fmt.Errorf("ошибка сервера: %d %s", status, string(body))
+	}
+
+	return nil
+}
+
+func RevokeAdmin(token string, userID int) error {
+	headers := map[string]string{
+		"Authorization": "Bearer " + token,
+		"Accept":        "application/json",
+	}
+
+	url := fmt.Sprintf("%sadmin/revoke_admin/%d", config.Api, userID)
+	body, status, err := doRequest("PUT", url, nil, headers)
+	if err != nil {
+		return fmt.Errorf("ошибка запроса: %w", err)
+	}
+
+	if status < 200 || status >= 300 {
+		return fmt.Errorf("ошибка сервера: %d %s", status, string(body))
+	}
+
+	return nil
+}
+
+func UpdateUserLimit(token string, userID, newLimit int) error {
+	reqBody := map[string]int{
+		"user_id":   userID,
+		"new_limit": newLimit,
+	}
+
+	jsonBody, err := json.Marshal(reqBody)
+	if err != nil {
+		return fmt.Errorf("ошибка кодирования JSON: %w", err)
+	}
+
+	headers := map[string]string{
+		"Authorization": "Bearer " + token,
+		"Accept":        "application/json",
+		"Content-Type":  "application/json",
+	}
+
+	url := config.Api + "admin/update_limit"
+	body, status, err := doRequest("PUT", url, bytes.NewBuffer(jsonBody), headers)
+	if err != nil {
+		return fmt.Errorf("ошибка запроса: %w", err)
+	}
+	if status < 200 || status >= 300 {
+		return fmt.Errorf("ошибка сервера: %d %s", status, string(body))
+	}
+
+	return nil
 }

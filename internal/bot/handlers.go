@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"lockbot/internal/api"
+	"strconv"
 	"strings"
 	"time"
 
@@ -164,7 +165,7 @@ func (b *Bot) deleteHandler(c tele.Context) error {
 		return c.Send("You are not logged in. Please login with /login")
 	}
 
-	filename := args[0]
+	filename := strings.Join(args, " ")
 
 	if err := api.DeleteFile(token, filename); err != nil {
 		return c.Send("File deletion error: " + err.Error())
@@ -222,4 +223,81 @@ func (b *Bot) downloadHandler(c tele.Context) error {
 	}
 
 	return c.Send(doc)
+}
+
+func (b *Bot) makeAdminHandler(c tele.Context) error {
+	args := c.Args()
+	if len(args) < 1 {
+		return c.Send("Использование: /makeadmin <user_id>")
+	}
+
+	userIDStr := args[0]
+	userID, err := strconv.Atoi(userIDStr)
+	if err != nil {
+		return c.Send("Неверный ID пользователя")
+	}
+
+	token, ok := b.getSession(c.Sender().ID)
+	if !ok {
+		return c.Send("Вы не авторизованы.")
+	}
+
+	err = api.MakeAdmin(token, userID)
+	if err != nil {
+		return c.Send("Ошибка при повышении прав: " + err.Error())
+	}
+
+	return c.Send(fmt.Sprintf("Пользователь %d теперь админ ✅", userID))
+}
+
+func (b *Bot) revokeAdminHandler(c tele.Context) error {
+	args := c.Args()
+	if len(args) < 1 {
+		return c.Send("Использование: /revokeadmin <user_id>")
+	}
+
+	userID, err := strconv.Atoi(args[0])
+	if err != nil {
+		return c.Send("Неверный формат user_id")
+	}
+
+	token, ok := b.getSession(c.Sender().ID)
+	if !ok {
+		return c.Send("Вы не авторизованы.")
+	}
+
+	err = api.RevokeAdmin(token, userID)
+	if err != nil {
+		return c.Send("Ошибка при снятии прав: " + err.Error())
+	}
+
+	return c.Send(fmt.Sprintf("Пользователь %d больше не админ ❌", userID))
+}
+
+func (b *Bot) updateLimitHandler(c tele.Context) error {
+	args := c.Args()
+	if len(args) < 2 {
+		return c.Send("Использование: /limit <user_id> <new_limit>")
+	}
+
+	userID, err := strconv.Atoi(args[0])
+	if err != nil {
+		return c.Send("user_id должен быть числом")
+	}
+	limit, err := strconv.Atoi(args[1])
+	if err != nil {
+		return c.Send("new_limit должен быть числом")
+	}
+
+	token, ok := b.getSession(c.Sender().ID)
+	if !ok {
+		return c.Send("Вы не авторизованы.")
+	}
+
+	err = api.UpdateUserLimit(token, userID, limit)
+	if err != nil {
+		return c.Send("Ошибка обновления лимита: " + err.Error())
+	}
+
+	return c.Send(fmt.Sprintf("✅ Лимит пользователя %d обновлён до %d", userID, limit))
 }

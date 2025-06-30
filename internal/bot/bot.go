@@ -23,7 +23,15 @@ func NewBot() (*Bot, error) {
 		sessions: make(map[int64]models.SessionData),
 	}
 	b.registerHandlers()
+	b.registerAdminHandlers()
 	return b, nil
+}
+
+func (b *Bot) registerAdminHandlers() {
+	b.api.Handle("/list_user", b.usersHandler)
+	b.api.Handle("/limit", b.updateLimitHandler)
+	b.api.Handle("/makeadmin", b.makeAdminHandler)
+	b.api.Handle("/revokeadmin", b.revokeAdminHandler)
 }
 
 func (b *Bot) registerHandlers() {
@@ -33,7 +41,6 @@ func (b *Bot) registerHandlers() {
 	b.api.Handle("/delete", b.deleteHandler)
 	b.api.Handle("/storage", b.storageHandler)
 	b.api.Handle("/profile", b.profileHandler)
-	b.api.Handle("/list_user", b.usersHandler)
 	b.api.Handle("/register", b.registerHandler)
 	b.api.Handle("/download", b.downloadHandler)
 	b.api.Handle(tele.OnDocument, b.uploadHandler)
