@@ -9,6 +9,7 @@ import (
 	"lockbot/internal/models"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 )
 
 func Login(email, password string) (*models.LoginResponse, error) {
@@ -156,4 +157,65 @@ func GetStorage(token string) (*models.StorageResponse, error) {
 	}
 
 	return &resp, nil
+}
+func DeleteFile(token, filename string) error {
+	headers := map[string]string{
+		"Authorization": "Bearer " + token,
+		"Accept":        "application/json",
+	}
+
+	url := fmt.Sprintf("%sdelete/%s", config.Api, url.PathEscape(filename))
+
+	body, status, err := doRequest("DELETE", url, nil, headers)
+	if err != nil {
+		return fmt.Errorf("ошибка запроса: %w", err)
+	}
+
+	if status < 200 || status >= 300 {
+		return fmt.Errorf("ошибка сервера: %d %s", status, string(body))
+	}
+
+	return nil
+}
+
+func GetAllUsers(token string) ([]models.User, error) {
+	headers := map[string]string{
+		"Authorization": "Bearer " + token,
+		"Accept":        "application/json",
+	}
+
+	body, status, err := doRequest("GET", config.Api+"admin/users", nil, headers)
+	if err != nil {
+		return nil, fmt.Errorf("ошибка запроса: %w", err)
+	}
+
+	if status < 200 || status >= 300 {
+		return nil, fmt.Errorf("ошибка сервера: %d %s", status, string(body))
+	}
+
+	var users []models.User
+	if err := json.Unmarshal(body, &users); err != nil {
+		return nil, fmt.Errorf("ошибка парсинга ответа: %w", err)
+	}
+
+	return users, nil
+}
+
+func DownloadFile(token, filename string) ([]byte, string, error) {
+	headers := map[string]string{
+		"Authorization": "Bearer " + token,
+		"Accept":        "application/octet-stream",
+	}
+
+	url := fmt.Sprintf("%sstorage/%s", config.Api, filename)
+	body, status, err := doRequest("GET", url, nil, headers)
+	if err != nil {
+		return nil, "", fmt.Errorf("ошибка запроса: %w", err)
+	}
+
+	if status < 200 || status >= 300 {
+		return nil, "", fmt.Errorf("ошибка сервера: %d %s", status, string(body))
+	}
+
+	return body, filename, nil
 }

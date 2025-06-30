@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"bytes"
 	"fmt"
 	"lockbot/internal/api"
 	"strings"
@@ -12,11 +13,13 @@ import (
 func (b *Bot) help(c tele.Context) error {
 	// TODO: help list command
 	return c.Send(`Help page: 
-	/login - login in account
-	/register - reginster in account
+	/login <email password> - login in account
+	/register <email name password> - reginster in account
 	/logout - logout
 	/profile - weiw your profile
-	/storage - weiw your storage`)
+	/storage - weiw your storage
+	/delete <filename> - delete your file
+	/download <flename> - download file`)
 }
 
 func (b *Bot) loginHandler(c tele.Context) error {
@@ -154,9 +157,74 @@ func (b *Bot) storageHandler(c tele.Context) error {
 	return c.Send(reply)
 }
 
-func formatFilesList(files []string) string {
-	if len(files) == 0 {
-		return "(пусто)"
+func (b *Bot) deleteHandler(c tele.Context) error {
+	args := c.Args()
+	if len(args) < 1 {
+		return c.Send("Использование: /delete filename.txt")
 	}
-	return "- " + strings.Join(files, "\n• ")
+
+	userID := c.Sender().ID
+	token, ok := b.getSession(userID)
+	if !ok {
+		return c.Send("Вы не авторизованы. Пожалуйста, выполните вход с помощью /login")
+	}
+
+	filename := args[0]
+
+	if err := api.DeleteFile(token, filename); err != nil {
+		return c.Send("Ошибка удаления файла: " + err.Error())
+	}
+
+	return c.Send("Файл успешно удалён: " + filename)
+}
+
+func (b *Bot) usersHandler(c tele.Context) error {
+	userID := c.Sender().ID
+	token, ok := b.getSession(userID)
+	if !ok {
+		return c.Send("Вы не авторизованы. Используйте /login")
+	}
+
+	users, err := api.GetAllUsers(token)
+	if err != nil {
+		return c.Send("Ошибка получения списка пользователей: " + err.Error())
+	}
+
+	if len(users) == 0 {
+		return c.Send("Пользователи не найдены.")
+	}
+
+	var sb strings.Builder
+	sb.WriteString("Пользователи:\n")
+	for _, u := range users {
+		sb.WriteString(fmt.Sprintf("• %s (ID: %d)\n", u.Email, u.ID))
+	}
+
+	return c.Send(sb.String())
+}
+
+func (b *Bot) downloadHandler(c tele.Context) error {
+	args := c.Args()
+	if len(args) < 1 {
+		return c.Send("Использование: /download <имя_файла>")
+	}
+	filename := args[0]
+
+	userID := c.Sender().ID
+	token, ok := b.getSession(userID)
+	if !ok {
+		return c.Send("Вы не авторизованы. Используйте /login")
+	}
+
+	data, name, err := api.DownloadFile(token, filename)
+	if err != nil {
+		return c.Send("Ошибка загрузки файла: " + err.Error())
+	}
+
+	doc := &tele.Document{
+		File:     tele.File{FileReader: bytes.NewReader(data)},
+		FileName: name,
+	}
+
+	return c.Send(doc)
 }

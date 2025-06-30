@@ -34,6 +34,9 @@ func (b *Bot) registerHandlers() {
 	b.api.Handle("/register", b.registerHandler)
 	b.api.Handle(tele.OnDocument, b.uploadHandler)
 	b.api.Handle("/storage", b.storageHandler)
+	b.api.Handle("/delete", b.deleteHandler)
+	b.api.Handle("/list_user", b.usersHandler)
+	b.api.Handle("/download", b.downloadHandler)
 }
 
 func (b *Bot) Start() {

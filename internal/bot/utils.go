@@ -2,6 +2,7 @@ package bot
 
 import (
 	"lockbot/internal/models"
+	"strings"
 	"time"
 )
 
@@ -22,4 +23,11 @@ func (b *Bot) getSession(userID int64) (string, bool) {
 		return "", false
 	}
 	return session.Token, true
+}
+
+func formatFilesList(files []string) string {
+	if len(files) == 0 {
+		return "(пусто)"
+	}
+	return "- " + strings.Join(files, "\n• ")
 }
