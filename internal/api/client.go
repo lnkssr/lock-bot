@@ -92,9 +92,7 @@ func Register(email, name, password string) (*models.RegisterResponse, error) {
 		return nil, err
 	}
 
-	if status < 200 || status >= 300 {
-		return nil, fmt.Errorf("ошибка сервера: %s", string(body))
-	}
+	statusCheck(status, body)
 
 	var resp models.RegisterResponse
 	if err := json.Unmarshal(body, &resp); err != nil {
@@ -130,9 +128,7 @@ func UploadFile(token string, filename string, fileReader io.Reader) ([]byte, er
 		return nil, err
 	}
 
-	if status < 200 || status >= 300 {
-		return nil, fmt.Errorf("ошибка сервера: %s", string(body))
-	}
+	statusCheck(status, body)
 
 	return body, nil
 }
@@ -147,9 +143,8 @@ func GetStorage(token string) (*models.StorageResponse, error) {
 	if err != nil {
 		return nil, fmt.Errorf("ошибка запроса: %w", err)
 	}
-	if status < 200 || status >= 300 {
-		return nil, fmt.Errorf("ошибка сервера: %d %s", status, string(body))
-	}
+
+	statusCheck(status, body)
 
 	var resp models.StorageResponse
 	if err := json.Unmarshal(body, &resp); err != nil {
@@ -171,9 +166,7 @@ func DeleteFile(token, filename string) error {
 		return fmt.Errorf("ошибка запроса: %w", err)
 	}
 
-	if status < 200 || status >= 300 {
-		return fmt.Errorf("ошибка сервера: %d %s", status, string(body))
-	}
+	statusCheck(status, body)
 
 	return nil
 }
@@ -189,9 +182,7 @@ func GetAllUsers(token string) ([]models.User, error) {
 		return nil, fmt.Errorf("ошибка запроса: %w", err)
 	}
 
-	if status < 200 || status >= 300 {
-		return nil, fmt.Errorf("ошибка сервера: %d %s", status, string(body))
-	}
+	statusCheck(status, body)
 
 	var users []models.User
 	if err := json.Unmarshal(body, &users); err != nil {
@@ -213,9 +204,7 @@ func DownloadFile(token, filename string) ([]byte, string, error) {
 		return nil, "", fmt.Errorf("ошибка запроса: %w", err)
 	}
 
-	if status < 200 || status >= 300 {
-		return nil, "", fmt.Errorf("ошибка сервера: %d %s", status, string(body))
-	}
+	statusCheck(status, body)
 
 	return body, filename, nil
 }

@@ -27,7 +27,7 @@ func (b *Bot) getSession(userID int64) (string, bool) {
 
 func formatFilesList(files []string) string {
 	if len(files) == 0 {
-		return "(пусто)"
+		return "(empty)"
 	}
-	return "- " + strings.Join(files, "\n• ")
+	return "- " + strings.Join(files, "\n- ")
 }

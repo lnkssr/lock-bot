@@ -29,14 +29,14 @@ func NewBot() (*Bot, error) {
 func (b *Bot) registerHandlers() {
 	b.api.Handle("/help", b.help)
 	b.api.Handle("/login", b.loginHandler)
-	b.api.Handle("/profile", b.profileHandler)
 	b.api.Handle("/logout", b.logoutHandler)
-	b.api.Handle("/register", b.registerHandler)
-	b.api.Handle(tele.OnDocument, b.uploadHandler)
-	b.api.Handle("/storage", b.storageHandler)
 	b.api.Handle("/delete", b.deleteHandler)
+	b.api.Handle("/storage", b.storageHandler)
+	b.api.Handle("/profile", b.profileHandler)
 	b.api.Handle("/list_user", b.usersHandler)
+	b.api.Handle("/register", b.registerHandler)
 	b.api.Handle("/download", b.downloadHandler)
+	b.api.Handle(tele.OnDocument, b.uploadHandler)
 }
 
 func (b *Bot) Start() {
