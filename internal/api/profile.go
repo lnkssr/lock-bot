@@ -8,12 +8,15 @@ import (
 
 func Profile(token string) ([]byte, error) {
 	headers := models.Headers{
-		Authorization: "Brearer " + token,
+		Authorization: "Bearer " + token,
 		Accept:        "application/json",
 	}.ToMap()
 
-	url := fmt.Sprintf("%sprofile", config.Api)
-	body, status, err := doRequest("GET", url, nil, headers)
+	body, status, err := doRequest(
+		"GET",
+		fmt.Sprintf("%sprofile", config.Api),
+		nil,
+		headers)
 	if err != nil {
 		return nil, err
 	}

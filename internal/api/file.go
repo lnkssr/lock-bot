@@ -24,37 +24,42 @@ func UploadFile(token string, filename string, fileReader io.Reader) ([]byte, er
 		return nil, fmt.Errorf("error when copying a file: %w", err)
 	}
 
-	func() { _ = writer.Close() }()
+	writer.Close()
 
 	headers := models.Headers{
-		ContentType:   "application/json",
+		ContentType:   writer.FormDataContentType(),
 		Accept:        "application/json",
-		Authorization: "Brearer " + token,
+		Authorization: "Bearer " + token,
 	}.ToMap()
 
-	url := fmt.Sprintf("%supload", config.Api)
-	body, status, err := doRequest("POST", url, &buf, headers)
+	body, status, err := doRequest(
+		"POST",
+		fmt.Sprintf("%supload", config.Api),
+		&buf,
+		headers)
 	if err != nil {
 		return nil, err
 	}
 
 	statusCheck(status, body)
-
 	return body, nil
 }
 
 func GetStorage(token string) (*models.StorageResponse, error) {
 	headers := models.Headers{
-		ContentType: "application/json",
-		Accept:      "application/json",
+		ContentType:   "application/json",
+		Accept:        "application/json",
+		Authorization: "Bearer " + token,
 	}.ToMap()
 
-	url := fmt.Sprintf("%sstrorage", config.Api)
-	body, status, err := doRequest("GET", url, nil, headers)
+	body, status, err := doRequest(
+		"GET",
+		fmt.Sprintf("%sstorage", config.Api),
+		nil,
+		headers)
 	if err != nil {
 		return nil, fmt.Errorf("query error: %w", err)
 	}
-
 	statusCheck(status, body)
 
 	var resp models.StorageResponse
@@ -69,34 +74,39 @@ func DeleteFile(token, filename string) error {
 	escapedName := url.PathEscape(filename)
 
 	headers := models.Headers{
-		ContentType: "application/json",
-		Accept:      "application/json",
+		ContentType:   "application/json",
+		Accept:        "application/json",
+		Authorization: "Bearer " + token,
 	}.ToMap()
 
-	url := fmt.Sprintf("%sdelete/%s", config.Api, escapedName)
-	body, status, err := doRequest("DELETE", url, nil, headers)
+	body, status, err := doRequest(
+		"DELETE",
+		fmt.Sprintf("%sdelete/%s", config.Api, escapedName),
+		nil,
+		headers)
 	if err != nil {
 		return err
 	}
 
 	statusCheck(status, body)
-
 	return nil
 }
 
 func DownloadFile(token, filename string) ([]byte, string, error) {
 	headers := models.Headers{
-		Authorization: "Brearer " + token,
+		Authorization: "Bearer " + token,
 		Accept:        "application/octet-stream",
 	}.ToMap()
 
-	url := fmt.Sprintf("%sstorage/%s", config.Api, filename)
-	body, status, err := doRequest("GET", url, nil, headers)
+	body, status, err := doRequest(
+		"GET",
+		fmt.Sprintf("%sstorage/%s", config.Api, filename),
+		nil,
+		headers)
 	if err != nil {
 		return nil, "", fmt.Errorf("query error: %w", err)
 	}
 
 	statusCheck(status, body)
-
 	return body, filename, nil
 }

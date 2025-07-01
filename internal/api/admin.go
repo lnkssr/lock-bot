@@ -10,16 +10,18 @@ import (
 
 func GetAllUsers(token string) ([]models.User, error) {
 	headers := models.Headers{
-		Authorization: "Brearer " + token,
+		Authorization: "Bearer " + token,
 		Accept:        "application/json",
 	}.ToMap()
 
-	url := fmt.Sprintf("%sadmin/users", config.Api)
-	body, status, err := doRequest("GET", url, nil, headers)
+	body, status, err := doRequest(
+		"GET",
+		fmt.Sprintf("%sadmin/users", config.Api),
+		nil,
+		headers)
 	if err != nil {
 		return nil, fmt.Errorf("query error: %w", err)
 	}
-
 	statusCheck(status, body)
 
 	var users []models.User
@@ -32,12 +34,15 @@ func GetAllUsers(token string) ([]models.User, error) {
 
 func MakeAdmin(token string, userID int) error {
 	headers := models.Headers{
-		Authorization: "Brearer " + token,
+		Authorization: "Bearer " + token,
 		Accept:        "application/json",
 	}.ToMap()
 
-	url := fmt.Sprintf("%sadmin/make_admin/%d", config.Api, userID)
-	body, status, err := doRequest("PUT", url, nil, headers)
+	body, status, err := doRequest(
+		"PUT",
+		fmt.Sprintf("%sadmin/make_admin/%d", config.Api, userID),
+		nil,
+		headers)
 	if err != nil {
 		return fmt.Errorf("query error: %w", err)
 	}
@@ -49,12 +54,15 @@ func MakeAdmin(token string, userID int) error {
 
 func RevokeAdmin(token string, userID int) error {
 	headers := models.Headers{
-		Authorization: "Brearer " + token,
+		Authorization: "Bearer " + token,
 		Accept:        "application/json",
 	}.ToMap()
 
-	url := fmt.Sprintf("%sadmin/revoke_admin/%d", config.Api, userID)
-	body, status, err := doRequest("PUT", url, nil, headers)
+	body, status, err := doRequest(
+		"PUT",
+		fmt.Sprintf("%sadmin/revoke_admin/%d", config.Api, userID),
+		nil,
+		headers)
 	if err != nil {
 		return fmt.Errorf("query error: %w", err)
 	}
@@ -75,11 +83,14 @@ func UpdateUserLimit(token string, userID, newLimit int) error {
 	headers := models.Headers{
 		ContentType:   "application/json",
 		Accept:        "application/json",
-		Authorization: "Brearer " + token,
+		Authorization: "Bearer " + token,
 	}.ToMap()
 
-	url := fmt.Sprintf("%sadmin/update_limit", config.Api)
-	body, status, err := doRequest("PUT", url, bytes.NewBuffer(jsonBody), headers)
+	body, status, err := doRequest(
+		"PUT",
+		fmt.Sprintf("%sadmin/update_limit", config.Api),
+		bytes.NewBuffer(jsonBody),
+		headers)
 	if err != nil {
 		return fmt.Errorf("query error: %w", err)
 	}

@@ -46,7 +46,6 @@ func (b *Bot) storageHandler(c tele.Context) error {
 	if err != nil {
 		return c.Send("Error retrieving storage information: " + err.Error())
 	}
-
 	reply := fmt.Sprintf(
 		"Files in storage (%d):\n%s\n\n Utilized: %d from %d MB",
 		len(storage.Files),
@@ -54,6 +53,7 @@ func (b *Bot) storageHandler(c tele.Context) error {
 		storage.Storage.Used,
 		storage.Storage.Limit,
 	)
+	fmt.Println(storage, userID, token, reply)
 
 	return c.Send(reply)
 }
@@ -84,7 +84,7 @@ func (b *Bot) downloadHandler(c tele.Context) error {
 	if len(args) < 1 {
 		return c.Send("Usage: /download <filename>")
 	}
-	filename := args[0]
+	filename := strings.Join(args, " ")
 
 	userID := c.Sender().ID
 	token, ok := b.getSession(userID)

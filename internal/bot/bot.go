@@ -28,7 +28,7 @@ func NewBot() (*Bot, error) {
 }
 
 func (b *Bot) registerAdminHandlers() {
-	b.api.Handle("/list_user", b.usersHandler)
+	b.api.Handle("/users", b.usersHandler)
 	b.api.Handle("/limit", b.updateLimitHandler)
 	b.api.Handle("/makeadmin", b.makeAdminHandler)
 	b.api.Handle("/revokeadmin", b.revokeAdminHandler)

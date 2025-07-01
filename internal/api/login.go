@@ -20,8 +20,11 @@ func Login(email, password string) (*models.LoginResponse, error) {
 		Accept:      "application/json",
 	}.ToMap()
 
-	url := fmt.Sprintf("%slogin", config.Api)
-	body, status, err := doRequest("POST", url, bytes.NewBuffer(jsonBody), headers)
+	body, status, err := doRequest(
+		"POST",
+		fmt.Sprintf("%slogin", config.Api),
+		bytes.NewBuffer(jsonBody),
+		headers)
 	if err != nil {
 		return nil, err
 	}
@@ -38,12 +41,11 @@ func Login(email, password string) (*models.LoginResponse, error) {
 
 func Logout(token string) error {
 	headers := models.Headers{
-		Authorization: "Brearer " + token,
+		Authorization: "Bearer " + token,
 		Accept:        "application/json",
 	}.ToMap()
 
-	url := fmt.Sprintf("%slogout", config.Api)
-	body, status, err := doRequest("POST", url, nil, headers)
+	body, status, err := doRequest("POST", fmt.Sprintf("%slogout", config.Api), nil, headers)
 	if err != nil {
 		return err
 	}
@@ -65,8 +67,11 @@ func Register(email, name, password string) (*models.RegisterResponse, error) {
 		Accept:      "application/json",
 	}.ToMap()
 
-	url := fmt.Sprintf("%sregister", config.Api)
-	body, status, err := doRequest("POST", url, bytes.NewBuffer(jsonBody), headers)
+	body, status, err := doRequest(
+		"POST",
+		fmt.Sprintf("%sregister", config.Api),
+		bytes.NewBuffer(jsonBody),
+		headers)
 	if err != nil {
 		return nil, err
 	}
