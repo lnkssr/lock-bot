@@ -6,3 +6,6 @@ init:
 
 dev: 
 	go run ${BINARY}
+
+delete: 
+	rm -f lock-bot
