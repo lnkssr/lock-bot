@@ -3,6 +3,7 @@ package bot
 import (
 	"fmt"
 	"lockbot/internal/api"
+	logger "lockbot/internal/log"
 	"strings"
 	"time"
 
@@ -10,34 +11,41 @@ import (
 )
 
 func (b *Bot) help(c tele.Context) error {
-	return c.Send(`Help page: 
-	/login <email password> - login in account
-	/register <email name password> - reginster in account
-	/logout - logout
-	/profile - weiw your profile
-	/storage - weiw your storage
-	/delete <filename> - delete your file
-	/download <flename> - download file`)
+	return c.Send(`Help page:
+/login <email password> - login to your account
+/register <email name password> - register a new account
+/logout - logout
+/profile - view your profile
+/storage - view your storage
+/delete <filename> - delete a file
+/download <filename> - download a file`)
 }
 
 func (b *Bot) loginHandler(c tele.Context) error {
 	args := c.Args()
+	userID := c.Sender().ID
+
 	if len(args) < 2 {
-		return c.Send("Usage: /logn email password")
+		logger.Warn("Login attempt with insufficient arguments", userID)
+		return c.Send("Usage: /login <email> <password>")
 	}
 
 	email := args[0]
 	password := strings.Join(args[1:], " ")
 
+	logger.Debug("Attempting login", userID, email)
+
 	resp, err := api.Login(email, password)
 	if err != nil {
-		return c.Send("Error: " + err.Error())
+		logger.Error("Login failed", userID, email, err)
+		return c.Send("Login error: " + err.Error())
 	}
 
-	b.saveSession(c.Sender().ID, resp.Token, 24*time.Hour)
+	b.saveSession(userID, resp.Token, 24*time.Hour)
+	logger.Info("Login successful", userID, email)
 
 	reply := fmt.Sprintf(
-		"%s\n Welcome: %s",
+		"%s\nWelcome, %s!",
 		resp.Message,
 		resp.User.Email,
 	)
@@ -50,36 +58,47 @@ func (b *Bot) logoutHandler(c tele.Context) error {
 
 	token, ok := b.getSession(userID)
 	if !ok {
+		logger.Warn("Logout attempt without active session", userID)
 		return c.Send("You are not authorized.")
 	}
 
 	err := api.Logout(token)
 	if err != nil {
-		return c.Send("Login error: " + err.Error())
+		logger.Error("Logout failed", userID, err)
+		return c.Send("Logout error: " + err.Error())
 	}
 
 	delete(b.sessions, userID)
+	logger.Info("Logout successful", userID)
 
 	return c.Send("You have successfully logged out of your account.")
 }
 
 func (b *Bot) registerHandler(c tele.Context) error {
 	args := c.Args()
+	userID := c.Sender().ID
+
 	if len(args) < 3 {
-		return c.Send("Usage: /register email name password")
+		logger.Warn("Register attempt with insufficient arguments", userID)
+		return c.Send("Usage: /register <email> <name> <password>")
 	}
 
 	email := args[0]
 	name := args[1]
 	password := strings.Join(args[2:], " ")
 
+	logger.Debug("Attempting registration", userID, email, name)
+
 	resp, err := api.Register(email, name, password)
 	if err != nil {
+		logger.Error("Registration failed", userID, email, err)
 		return c.Send("Registration error: " + err.Error())
 	}
 
+	logger.Info("Registration successful", userID, email)
+
 	reply := fmt.Sprintf(
-		"%s\n You have successfully registered, now log in.",
+		"%s\nYou have successfully registered. Now you can log in.",
 		resp.Message,
 	)
 

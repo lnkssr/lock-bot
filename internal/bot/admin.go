@@ -3,6 +3,7 @@ package bot
 import (
 	"fmt"
 	"lockbot/internal/api"
+	logger "lockbot/internal/log"
 	"strconv"
 	"strings"
 
@@ -11,94 +12,128 @@ import (
 
 func (b *Bot) makeAdminHandler(c tele.Context) error {
 	args := c.Args()
+	requesterID := c.Sender().ID
+
 	if len(args) < 1 {
+		logger.Warn("makeAdmin: missing arguments", requesterID)
 		return c.Send("Usage: /makeadmin <user_id>")
 	}
 
-	userIDStr := args[0]
-	userID, err := strconv.Atoi(userIDStr)
+	targetID, err := strconv.Atoi(args[0])
 	if err != nil {
-		return c.Send("Invalid user ID")
+		logger.Warn("makeAdmin: invalid user ID", requesterID, args[0])
+		return c.Send("Invalid user ID format.")
 	}
 
-	token, ok := b.getSession(c.Sender().ID)
+	token, ok := b.getSession(requesterID)
 	if !ok {
+		logger.Warn("makeAdmin: unauthorized", requesterID)
 		return c.Send("You are not authorized.")
 	}
 
-	err = api.MakeAdmin(token, userID)
+	logger.Debug("Attempting to promote user", requesterID, targetID)
+
+	err = api.MakeAdmin(token, targetID)
 	if err != nil {
-		return c.Send("Error when raising rights: " + err.Error())
+		logger.Error("makeAdmin failed", requesterID, targetID, err)
+		return c.Send("Error promoting user: " + err.Error())
 	}
 
-	return c.Send(fmt.Sprintf("User %d is now an admin", userID))
+	logger.Info("User promoted to admin", requesterID, targetID)
+	return c.Send(fmt.Sprintf("User %d is now an admin", targetID))
 }
 
 func (b *Bot) revokeAdminHandler(c tele.Context) error {
 	args := c.Args()
+	requesterID := c.Sender().ID
+
 	if len(args) < 1 {
+		logger.Warn("revokeAdmin: missing arguments", requesterID)
 		return c.Send("Usage: /revokeadmin <user_id>")
 	}
 
-	userID, err := strconv.Atoi(args[0])
+	targetID, err := strconv.Atoi(args[0])
 	if err != nil {
-		return c.Send("Incorrect format user_id")
+		logger.Warn("revokeAdmin: invalid user ID", requesterID, args[0])
+		return c.Send("User ID must be a number.")
 	}
 
-	token, ok := b.getSession(c.Sender().ID)
+	token, ok := b.getSession(requesterID)
 	if !ok {
+		logger.Warn("revokeAdmin: unauthorized", requesterID)
 		return c.Send("You are not authorized.")
 	}
 
-	err = api.RevokeAdmin(token, userID)
+	logger.Debug("Attempting to revoke admin rights", requesterID, targetID)
+
+	err = api.RevokeAdmin(token, targetID)
 	if err != nil {
-		return c.Send("License revocation error: " + err.Error())
+		logger.Error("revokeAdmin failed", requesterID, targetID, err)
+		return c.Send("Error revoking admin rights: " + err.Error())
 	}
 
-	return c.Send(fmt.Sprintf("User %d is no longer an admin", userID))
+	logger.Info("Admin rights revoked", requesterID, targetID)
+	return c.Send(fmt.Sprintf("User %d is no longer an admin", targetID))
 }
 
 func (b *Bot) updateLimitHandler(c tele.Context) error {
 	args := c.Args()
+	requesterID := c.Sender().ID
+
 	if len(args) < 2 {
+		logger.Warn("updateLimit: missing arguments", requesterID)
 		return c.Send("Usage: /limit <user_id> <new_limit>")
 	}
 
-	userID, err := strconv.Atoi(args[0])
+	targetID, err := strconv.Atoi(args[0])
 	if err != nil {
-		return c.Send("user_id should be a number")
-	}
-	limit, err := strconv.Atoi(args[1])
-	if err != nil {
-		return c.Send("new_limit should be a number")
+		logger.Warn("updateLimit: invalid user_id", requesterID, args[0])
+		return c.Send("User ID must be a number.")
 	}
 
-	token, ok := b.getSession(c.Sender().ID)
+	newLimit, err := strconv.Atoi(args[1])
+	if err != nil {
+		logger.Warn("updateLimit: invalid new_limit", requesterID, args[1])
+		return c.Send("New limit must be a number.")
+	}
+
+	token, ok := b.getSession(requesterID)
 	if !ok {
+		logger.Warn("updateLimit: unauthorized", requesterID)
 		return c.Send("You are not authorized.")
 	}
 
-	err = api.UpdateUserLimit(token, userID, limit)
+	logger.Debug("Updating user limit", requesterID, targetID, newLimit)
+
+	err = api.UpdateUserLimit(token, targetID, newLimit)
 	if err != nil {
-		return c.Send("Limit update error: " + err.Error())
+		logger.Error("updateLimit failed", requesterID, targetID, newLimit, err)
+		return c.Send("Error updating user limit: " + err.Error())
 	}
 
-	return c.Send(fmt.Sprintf("User limit %d updated to %d", userID, limit))
+	logger.Info("User limit updated", requesterID, targetID, newLimit)
+	return c.Send(fmt.Sprintf("User %d's limit updated to %d MB", targetID, newLimit))
 }
 
 func (b *Bot) usersHandler(c tele.Context) error {
-	userID := c.Sender().ID
-	token, ok := b.getSession(userID)
+	requesterID := c.Sender().ID
+
+	token, ok := b.getSession(requesterID)
 	if !ok {
+		logger.Warn("usersHandler: unauthorized access", requesterID)
 		return c.Send("You are not logged in. Please login with /login")
 	}
 
+	logger.Debug("Fetching user list", requesterID)
+
 	users, err := api.GetAllUsers(token)
 	if err != nil {
-		return c.Send("Error getting the list of users:" + err.Error())
+		logger.Error("usersHandler: failed to retrieve users", requesterID, err)
+		return c.Send("Error retrieving the list of users: " + err.Error())
 	}
 
 	if len(users) == 0 {
+		logger.Info("usersHandler: no users found", requesterID)
 		return c.Send("No users found.")
 	}
 
@@ -108,5 +143,6 @@ func (b *Bot) usersHandler(c tele.Context) error {
 		sb.WriteString(fmt.Sprintf("- %s (ID: %d)\n", u.Email, u.ID))
 	}
 
+	logger.Info("usersHandler: user list retrieved", requesterID, len(users))
 	return c.Send(sb.String())
 }

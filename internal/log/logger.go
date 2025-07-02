@@ -26,7 +26,7 @@ func SetLevel(l Level) {
 
 func logf(l Level, prefix string, args ...any) {
 	if l >= currentLevel {
-		stdLogger.Printf("%s %s", prefix, fmt.Sprint(args...))
+		stdLogger.Printf("%s %s", prefix, fmt.Sprintln(args...))
 	}
 }
 
