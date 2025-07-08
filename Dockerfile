@@ -16,3 +16,10 @@ RUN go mod download
 COPY . .
 
 RUN go build -o lock-bot ./cmd/lock-bot/main.go
+
+FROM alpine:latest
+
+WORKDIR /app
+
+COPY --from=builder /app/lock-bot .
+CMD ["./lock-bot"]
