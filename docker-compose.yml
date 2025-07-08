@@ -1,0 +1,11 @@
+services:
+  app:
+    container_name: lock-bot
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      TOKEN: ${TOKEN}
+      API_URL: http://host.docker.internal:5000/api/
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
