@@ -7,5 +7,6 @@ services:
     environment:
       TOKEN: ${TOKEN}
       API_URL: http://host.docker.internal:5000/api/
+      LOG_LEVEL: debug
     extra_hosts:
       - "host.docker.internal:host-gateway"
