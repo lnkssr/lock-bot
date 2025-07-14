@@ -5,12 +5,12 @@ Built in Go with modular architecture and minimal dependencies.
 
 ## Features
 
-* Upload, list, download, and delete files via Telegram
-* Authenticated access using Telegram ID
-* Works with any lock-box API endpoint
-* Written in pure Go (no external frameworks except Telegram API lib)
-* Built-in logger wrapper
-* Docker-ready backend (lock-box)
+- Upload, list, download, and delete files via Telegram
+- Authenticated access using Telegram ID
+- Works with any lock-box API endpoint
+- Written in pure Go (no external frameworks except Telegram API lib)
+- Built-in logger wrapper
+- Docker-ready backend (lock-box)
 
 ## Getting Started
 
@@ -31,7 +31,17 @@ TOKEN="0123456789:abcdefghijklmnopqrstuvwxyz"
 
 # lock-box API URL
 API_URL="http://localhost:5000/api/"
+
+# log-level
+LOG_LEVEL="debug"
 ```
+
+### 2.5. Log levels list
+
+1. debug
+2. info
+3. warn
+4. error
 
 ### 3. Run the Bot
 

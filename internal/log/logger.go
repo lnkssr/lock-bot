@@ -2,8 +2,10 @@ package logger
 
 import (
 	"fmt"
+	"lockbot/internal/config"
 	"log"
 	"os"
+	"strings"
 )
 
 type Level int
@@ -15,8 +17,23 @@ const (
 	ERROR
 )
 
+func parcerLevel(env string) Level {
+	switch strings.ToUpper(env) {
+	case "DEBUG":
+		return DEBUG
+	case "INFO":
+		return INFO
+	case "WARN":
+		return WARN
+	case "ERROR":
+		return ERROR
+	default:
+		return INFO 
+	}
+}
+
 var (
-	currentLevel = DEBUG
+	currentLevel = parcerLevel(config.LogLevel) 
 	stdLogger    = log.New(os.Stdout, "", log.LstdFlags)
 )
 

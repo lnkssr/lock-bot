@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	Pref tele.Settings
-	Api  string
+	Pref     tele.Settings
+	Api      string
+	LogLevel string
 )
 
 func init() {
@@ -26,6 +27,11 @@ func init() {
 	Api = os.Getenv("API_URL")
 	if Api == "" {
 		log.Fatal("API_URL is not set in environment")
+	}
+
+	LogLevel := os.Getenv("LOG_LEVEL")
+	if LogLevel == "" {
+		log.Fatal("LOG_LEVEL is not set in env")
 	}
 
 	Pref = tele.Settings{
