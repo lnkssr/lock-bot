@@ -22,3 +22,5 @@ docker_del:
 
 logs:
 	@docker compose logs -f app
+
+.PHONY: logs docker docker_del dev init delete 
