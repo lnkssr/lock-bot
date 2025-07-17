@@ -41,7 +41,7 @@ func UploadFile(token string, filename string, fileReader io.Reader) ([]byte, er
 		return nil, err
 	}
 
- _ = statusCheck(status, body)
+	_ = statusCheck(status, body)
 	return body, nil
 }
 

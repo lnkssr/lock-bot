@@ -16,7 +16,7 @@ func GetAllUsers(token string) ([]models.User, error) {
 	}.ToMap()
 
 	logger.Debug(headers)
-	
+
 	body, status, err := doRequest(
 		"GET",
 		fmt.Sprintf("%sadmin/users", config.Api),
@@ -25,7 +25,7 @@ func GetAllUsers(token string) ([]models.User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("query error: %w", err)
 	}
-	_ =	statusCheck(status, body)
+	_ = statusCheck(status, body)
 
 	var users []models.User
 	if err := json.Unmarshal(body, &users); err != nil {
@@ -33,7 +33,7 @@ func GetAllUsers(token string) ([]models.User, error) {
 	}
 
 	logger.Debug(users, status, body)
-	
+
 	return users, nil
 }
 

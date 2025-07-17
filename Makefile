@@ -1,7 +1,7 @@
 BINARY = cmd/lock-bot/main.go
 NAME = build/lock-bot
 
-init:
+init: check
 	@rm -rf build 
 	@mkdir build
 	@go mod download
@@ -10,7 +10,7 @@ init:
 check:
 	@./scripts/check.sh
 
-dev:
+dev: check
 	@go mod download
 	@go run ${BINARY}
 

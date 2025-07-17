@@ -24,6 +24,7 @@ func NewBot() (*Bot, error) {
 	}
 	b.registerHandlers()
 	b.registerAdminHandlers()
+	b.registerHandlersV2()
 	return b, nil
 }
 
@@ -44,6 +45,10 @@ func (b *Bot) registerHandlers() {
 	b.api.Handle("/register", b.registerHandler)
 	b.api.Handle("/download", b.downloadHandler)
 	b.api.Handle(tele.OnDocument, b.uploadHandler)
+}
+
+func (b *Bot) registerHandlersV2() {
+	b.api.Handle("/test", b.profileHandlerV2)
 }
 
 func (b *Bot) Start() {

@@ -28,12 +28,12 @@ func parcerLevel(env string) Level {
 	case "ERROR":
 		return ERROR
 	default:
-		return INFO 
+		return INFO
 	}
 }
 
 var (
-	currentLevel = parcerLevel(config.LogLevel) 
+	currentLevel = parcerLevel(config.LogLevel)
 	stdLogger    = log.New(os.Stdout, "", log.LstdFlags)
 )
 

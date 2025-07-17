@@ -25,3 +25,24 @@ func Profile(token string) ([]byte, error) {
 
 	return body, nil
 }
+
+func ProfileV2(token string) ([]byte, error) {
+	headers := models.Headers{
+		Authorization: "Bearer " + token,
+		Accept:        "applications/json",
+	}.ToMap()
+
+	body, status, err := doRequest(
+		"GET",
+		fmt.Sprint(config.Api+"v2/"+"profile"),
+		nil,
+		headers)
+
+	if err != nil {
+		return nil, err
+	}
+
+	_ = statusCheck(status, body)
+
+	return body, nil
+}
