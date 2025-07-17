@@ -41,7 +41,7 @@ func UploadFile(token string, filename string, fileReader io.Reader) ([]byte, er
 		return nil, err
 	}
 
-	statusCheck(status, body)
+ _ = statusCheck(status, body)
 	return body, nil
 }
 
@@ -60,7 +60,7 @@ func GetStorage(token string) (*models.StorageResponse, error) {
 	if err != nil {
 		return nil, fmt.Errorf("query error: %w", err)
 	}
-	statusCheck(status, body)
+	_ = statusCheck(status, body)
 
 	var resp models.StorageResponse
 	if err := json.Unmarshal(body, &resp); err != nil {
@@ -88,7 +88,7 @@ func DeleteFile(token, filename string) error {
 		return err
 	}
 
-	statusCheck(status, body)
+	_ = statusCheck(status, body)
 	return nil
 }
 
@@ -107,6 +107,6 @@ func DownloadFile(token, filename string) ([]byte, string, error) {
 		return nil, "", fmt.Errorf("query error: %w", err)
 	}
 
-	statusCheck(status, body)
+	_ = statusCheck(status, body)
 	return body, filename, nil
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"lockbot/internal/config"
+	logger "lockbot/internal/log"
 	"lockbot/internal/models"
 )
 
@@ -14,6 +15,8 @@ func GetAllUsers(token string) ([]models.User, error) {
 		Accept:        "application/json",
 	}.ToMap()
 
+	logger.Debug(headers)
+	
 	body, status, err := doRequest(
 		"GET",
 		fmt.Sprintf("%sadmin/users", config.Api),
@@ -22,13 +25,15 @@ func GetAllUsers(token string) ([]models.User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("query error: %w", err)
 	}
-	statusCheck(status, body)
+	_ =	statusCheck(status, body)
 
 	var users []models.User
 	if err := json.Unmarshal(body, &users); err != nil {
 		return nil, fmt.Errorf("response parsing error: %w", err)
 	}
 
+	logger.Debug(users, status, body)
+	
 	return users, nil
 }
 
@@ -47,7 +52,7 @@ func MakeAdmin(token string, userID int) error {
 		return fmt.Errorf("query error: %w", err)
 	}
 
-	statusCheck(status, body)
+	_ = statusCheck(status, body)
 
 	return nil
 }
@@ -67,7 +72,7 @@ func RevokeAdmin(token string, userID int) error {
 		return fmt.Errorf("query error: %w", err)
 	}
 
-	statusCheck(status, body)
+	_ = statusCheck(status, body)
 
 	return nil
 }
@@ -94,7 +99,7 @@ func UpdateUserLimit(token string, userID, newLimit int) error {
 	if err != nil {
 		return fmt.Errorf("query error: %w", err)
 	}
-	statusCheck(status, body)
+	_ = statusCheck(status, body)
 
 	return nil
 }

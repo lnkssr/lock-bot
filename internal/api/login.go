@@ -29,7 +29,7 @@ func Login(email, password string) (*models.LoginResponse, error) {
 		return nil, err
 	}
 
-	statusCheck(status, body)
+	_ = statusCheck(status, body)
 
 	var loginResp models.LoginResponse
 	if err := json.Unmarshal(body, &loginResp); err != nil {
@@ -50,7 +50,7 @@ func Logout(token string) error {
 		return err
 	}
 
-	statusCheck(status, body)
+	_ = statusCheck(status, body)
 
 	return nil
 }
@@ -76,7 +76,7 @@ func Register(email, name, password string) (*models.RegisterResponse, error) {
 		return nil, err
 	}
 
-	statusCheck(status, body)
+	_ = statusCheck(status, body)
 
 	var resp models.RegisterResponse
 	if err := json.Unmarshal(body, &resp); err != nil {

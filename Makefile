@@ -2,17 +2,20 @@ BINARY = cmd/lock-bot/main.go
 NAME = build/lock-bot
 
 init:
-	rm -f ${NAME}
-	mkdir build
-	go mod download
-	go build -o ${NAME} ${BINARY}
+	@rm -rf build 
+	@mkdir build
+	@go mod download
+	@go build -o ${NAME} ${BINARY}
 
-dev: 
-	go mod download
-	go run ${BINARY}
+check:
+	@./scripts/check.sh
+
+dev:
+	@go mod download
+	@go run ${BINARY}
 
 delete: 
-	rm -rf build
+	@rm -rf build
 
 docker: docker_del
 	@docker compose up --build -d

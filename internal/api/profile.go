@@ -21,7 +21,7 @@ func Profile(token string) ([]byte, error) {
 		return nil, err
 	}
 
-	statusCheck(status, body)
+	_ = statusCheck(status, body)
 
 	return body, nil
 }
