@@ -34,13 +34,16 @@ func (b *Bot) uploadHandler(c tele.Context) error {
 
 	logger.Debug("Uploading file", userID, file.FileName)
 
-	_, err = api.UploadFile(token, file.FileName, reader)
-	if err != nil {
-		logger.Error("File upload failed", userID, file.FileName, err)
-		return c.Send("File upload error: " + err.Error())
-	}
+	go func() {
+		_, err = api.UploadFile(token, file.FileName, reader)
+		if err != nil {
+			logger.Error("File upload failed", userID, file.FileName, err)
+			_ = c.Send("File upload error: " + err.Error())
+			return
+		}
 
-	logger.Info("File uploaded successfully", userID, file.FileName)
+		logger.Info("File uploaded successfully", userID, file.FileName)
+	}()
 	return c.Send("The file has been successfully uploaded!")
 }
 
@@ -88,12 +91,15 @@ func (b *Bot) deleteHandler(c tele.Context) error {
 
 	filename := strings.Join(args, " ")
 
-	if err := api.DeleteFile(token, filename); err != nil {
-		logger.Error("Failed to delete file", userID, filename, err)
-		return c.Send("File deletion error: " + err.Error())
-	}
+	go func() {
+		if err := api.DeleteFile(token, filename); err != nil {
+			logger.Error("Failed to delete file", userID, filename, err)
+			_ = c.Send("File deletion error: " + err.Error())
+			return
+		}
 
-	logger.Info("File deleted", userID, filename)
+		logger.Info("File deleted", userID, filename)
+	}()
 	return c.Send("The file has been successfully deleted: " + filename)
 }
 

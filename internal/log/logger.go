@@ -1,11 +1,12 @@
 package logger
 
 import (
-	"fmt"
-	"lockbot/internal/config"
-	"log"
 	"os"
 	"strings"
+
+	"lockbot/internal/config"
+
+	"github.com/charmbracelet/log"
 )
 
 type Level int
@@ -17,37 +18,46 @@ const (
 	ERROR
 )
 
-func parcerLevel(env string) Level {
+func parseLevel(env string) log.Level {
 	switch strings.ToUpper(env) {
 	case "DEBUG":
-		return DEBUG
+		return log.DebugLevel
 	case "INFO":
-		return INFO
+		return log.InfoLevel
 	case "WARN":
-		return WARN
+		return log.WarnLevel
 	case "ERROR":
-		return ERROR
+		return log.ErrorLevel
 	default:
-		return INFO
+		return log.InfoLevel
 	}
 }
 
 var (
-	currentLevel = parcerLevel(config.LogLevel)
-	stdLogger    = log.New(os.Stdout, "", log.LstdFlags)
+	stdLogger = log.NewWithOptions(os.Stderr, log.Options{
+		ReportTimestamp: true,
+		Prefix:          "api client log:",
+	})
 )
 
-func SetLevel(l Level) {
-	currentLevel = l
+func init() {
+	stdLogger.SetLevel(parseLevel(config.LogLevel))
 }
 
-func logf(l Level, prefix string, args ...any) {
-	if l >= currentLevel {
-		stdLogger.Printf("%s %s", prefix, fmt.Sprintln(args...))
+func SetLevel(l Level) {
+	switch l {
+	case DEBUG:
+		stdLogger.SetLevel(log.DebugLevel)
+	case INFO:
+		stdLogger.SetLevel(log.InfoLevel)
+	case WARN:
+		stdLogger.SetLevel(log.WarnLevel)
+	case ERROR:
+		stdLogger.SetLevel(log.ErrorLevel)
 	}
 }
 
-func Debug(args ...any) { logf(DEBUG, "[DEBUG]", args...) }
-func Info(args ...any)  { logf(INFO, "[INFO]", args...) }
-func Warn(args ...any)  { logf(WARN, "[WARN]", args...) }
-func Error(args ...any) { logf(ERROR, "[ERROR]", args...) }
+func Debug(args ...any) { stdLogger.Debug(args[0], args[1:]...) }
+func Info(args ...any)  { stdLogger.Info(args[0], args[1:]...) }
+func Warn(args ...any)  { stdLogger.Warn(args[0], args[1:]...) }
+func Error(args ...any) { stdLogger.Error(args[0], args[1:]...) }
