@@ -14,7 +14,7 @@ dev: check
 	@go mod download
 	@go run ${BINARY}
 
-delete: 
+clear: 
 	@rm -rf build
 
 docker: docker_del
