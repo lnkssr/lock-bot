@@ -1,7 +1,7 @@
 BINARY = cmd/lock-bot/main.go
 NAME = build/lock-bot
 
-init: 
+install: 
 	@rm -rf build 
 	@mkdir build
 	@go mod download
@@ -17,13 +17,13 @@ dev: check
 clear: 
 	@rm -rf build
 
-docker: docker_del
+init: down
 	@docker compose up --build -d
 
-docker_del:
+down:
 	@docker compose down --rmi all --volumes --remove-orphans
 
 logs:
 	@docker compose logs -f app
 
-.PHONY: logs docker docker_del dev init delete 
+.PHONY: logs init down dev init delete 
