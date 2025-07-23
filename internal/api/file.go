@@ -24,7 +24,7 @@ func UploadFile(token string, filename string, fileReader io.Reader) ([]byte, er
 		return nil, fmt.Errorf("error when copying a file: %w", err)
 	}
 
-	writer.Close()
+	func() { _ = writer.Close() }()
 
 	headers := models.Headers{
 		ContentType:   writer.FormDataContentType(),
@@ -32,7 +32,7 @@ func UploadFile(token string, filename string, fileReader io.Reader) ([]byte, er
 		Authorization: "Bearer " + token,
 	}.ToMap()
 
-	body, status, err := doRequest(
+	body, err := doRequest(
 		"POST",
 		fmt.Sprintf("%supload", config.Api),
 		&buf,
@@ -41,7 +41,6 @@ func UploadFile(token string, filename string, fileReader io.Reader) ([]byte, er
 		return nil, err
 	}
 
-	_ = statusCheck(status, body)
 	return body, nil
 }
 
@@ -52,7 +51,7 @@ func GetStorage(token string) (*models.StorageResponse, error) {
 		Authorization: "Bearer " + token,
 	}.ToMap()
 
-	body, status, err := doRequest(
+	body, err := doRequest(
 		"GET",
 		fmt.Sprintf("%sstorage", config.Api),
 		nil,
@@ -60,7 +59,6 @@ func GetStorage(token string) (*models.StorageResponse, error) {
 	if err != nil {
 		return nil, fmt.Errorf("query error: %w", err)
 	}
-	_ = statusCheck(status, body)
 
 	var resp models.StorageResponse
 	if err := json.Unmarshal(body, &resp); err != nil {
@@ -79,7 +77,7 @@ func DeleteFile(token, filename string) error {
 		Authorization: "Bearer " + token,
 	}.ToMap()
 
-	body, status, err := doRequest(
+	_, err := doRequest(
 		"DELETE",
 		fmt.Sprintf("%sdelete/%s", config.Api, escapedName),
 		nil,
@@ -88,7 +86,6 @@ func DeleteFile(token, filename string) error {
 		return err
 	}
 
-	_ = statusCheck(status, body)
 	return nil
 }
 
@@ -98,7 +95,7 @@ func DownloadFile(token, filename string) ([]byte, string, error) {
 		Accept:        "application/octet-stream",
 	}.ToMap()
 
-	body, status, err := doRequest(
+	body, err := doRequest(
 		"GET",
 		fmt.Sprintf("%sstorage/%s", config.Api, filename),
 		nil,
@@ -107,6 +104,5 @@ func DownloadFile(token, filename string) ([]byte, string, error) {
 		return nil, "", fmt.Errorf("query error: %w", err)
 	}
 
-	_ = statusCheck(status, body)
 	return body, filename, nil
 }

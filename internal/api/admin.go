@@ -17,7 +17,7 @@ func GetAllUsers(token string) ([]models.User, error) {
 
 	logger.Debug(headers)
 
-	body, status, err := doRequest(
+	body, err := doRequest(
 		"GET",
 		fmt.Sprintf("%sadmin/users", config.Api),
 		nil,
@@ -25,14 +25,13 @@ func GetAllUsers(token string) ([]models.User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("query error: %w", err)
 	}
-	_ = statusCheck(status, body)
 
 	var users []models.User
 	if err := json.Unmarshal(body, &users); err != nil {
 		return nil, fmt.Errorf("response parsing error: %w", err)
 	}
 
-	logger.Debug(users, status, body)
+	logger.Debug(users, body)
 
 	return users, nil
 }
@@ -43,7 +42,7 @@ func MakeAdmin(token string, userID int) error {
 		Accept:        "application/json",
 	}.ToMap()
 
-	body, status, err := doRequest(
+	_, err := doRequest(
 		"PUT",
 		fmt.Sprintf("%sadmin/make_admin/%d", config.Api, userID),
 		nil,
@@ -51,8 +50,6 @@ func MakeAdmin(token string, userID int) error {
 	if err != nil {
 		return fmt.Errorf("query error: %w", err)
 	}
-
-	_ = statusCheck(status, body)
 
 	return nil
 }
@@ -63,7 +60,7 @@ func RevokeAdmin(token string, userID int) error {
 		Accept:        "application/json",
 	}.ToMap()
 
-	body, status, err := doRequest(
+	_, err := doRequest(
 		"PUT",
 		fmt.Sprintf("%sadmin/revoke_admin/%d", config.Api, userID),
 		nil,
@@ -71,8 +68,6 @@ func RevokeAdmin(token string, userID int) error {
 	if err != nil {
 		return fmt.Errorf("query error: %w", err)
 	}
-
-	_ = statusCheck(status, body)
 
 	return nil
 }
@@ -91,7 +86,7 @@ func UpdateUserLimit(token string, userID, newLimit int) error {
 		Authorization: "Bearer " + token,
 	}.ToMap()
 
-	body, status, err := doRequest(
+	_, err = doRequest(
 		"PUT",
 		fmt.Sprintf("%sadmin/update_limit", config.Api),
 		bytes.NewBuffer(jsonBody),
@@ -99,7 +94,6 @@ func UpdateUserLimit(token string, userID, newLimit int) error {
 	if err != nil {
 		return fmt.Errorf("query error: %w", err)
 	}
-	_ = statusCheck(status, body)
 
 	return nil
 }
