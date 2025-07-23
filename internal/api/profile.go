@@ -12,7 +12,7 @@ func Profile(token string) ([]byte, error) {
 		Accept:        "application/json",
 	}.ToMap()
 
-	body, status, err := doRequest(
+	body, err := doRequest(
 		"GET",
 		fmt.Sprintf("%sprofile", config.Api),
 		nil,
@@ -20,8 +20,6 @@ func Profile(token string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	_ = statusCheck(status, body)
 
 	return body, nil
 }
@@ -32,7 +30,7 @@ func ProfileV2(token string) ([]byte, error) {
 		Accept:        "applications/json",
 	}.ToMap()
 
-	body, status, err := doRequest(
+	body, err := doRequest(
 		"GET",
 		fmt.Sprint(config.Api+"v2/"+"profile"),
 		nil,
@@ -41,8 +39,6 @@ func ProfileV2(token string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	_ = statusCheck(status, body)
 
 	return body, nil
 }

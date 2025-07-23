@@ -24,7 +24,7 @@ func (b *Bot) uploadHandler(c tele.Context) error {
 		logger.Error("Failed to retrieve file from Telegram", userID, err)
 		return c.Send("Error while retrieving the file: " + err.Error())
 	}
-	defer reader.Close()
+	defer func() { _ = reader.Close() }()
 
 	token, ok := b.getSession(userID)
 	if !ok {

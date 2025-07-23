@@ -46,7 +46,7 @@ func loadEnvFile(filename string) {
 		log.Println("Warning: .env file not found, using system environment variables")
 		return
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -65,7 +65,7 @@ func loadEnvFile(filename string) {
 		value := strings.Trim(strings.TrimSpace(parts[1]), `"'`)
 
 		if _, exists := os.LookupEnv(key); !exists {
-			os.Setenv(key, value)
+			_ = os.Setenv(key, value)
 		}
 	}
 }
